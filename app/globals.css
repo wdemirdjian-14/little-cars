@@ -702,15 +702,24 @@ p {
 
 @media (max-width: 1180px) {
   .nav,
-  .header-tools .charge,
   .header-tools .phone {
     display: none;
   }
   .burger {
     display: flex;
-  }
-  .header-tools {
     margin-left: 0;
+  }
+  /* La batterie reste visible à côté du menu : elle indique où l'on en est
+     dans la page. L'en-tête ne se masque donc plus au défilement. */
+  .header-tools {
+    margin-left: auto;
+    gap: 14px;
+  }
+  .site-header[data-hidden="true"] {
+    transform: none;
+  }
+  .charge {
+    color: var(--mist-2);
   }
 }
 @media (max-width: 560px) {
