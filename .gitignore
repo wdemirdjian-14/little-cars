@@ -1,0 +1,18 @@
+# dépendances et builds
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# aspiration du site d'origine (121 Mo) : source de travail locale, jamais versionnée
+scrape/
+
+# données et secrets
+data/
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+npm-debug.log*

@@ -1,0 +1,642 @@
+<title>Audit little-cars.fr</title>
+<meta name="description" content="Audit technique, fonctionnel, SEO et RGPD du site little-cars.fr avant refonte.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #f4f7f9;
+    --surface: #ffffff;
+    --ink: #13202a;
+    --ink-soft: #3b4b56;
+    --muted: #62737e;
+    --rule: #d6dfe5;
+    --rule-strong: #b9c7d0;
+    --accent: #0378a6;
+    --accent-ink: #025c80;
+    --accent-wash: #e3f1f7;
+    --brand-red: #7d1122;
+    --crit: #a3162c;
+    --crit-wash: #fbe9ec;
+    --warn: #9a5b00;
+    --warn-wash: #fdf1dc;
+    --info: #3f5563;
+    --info-wash: #e9eef1;
+    --ok: #2b7248;
+    --ok-wash: #e4f3ea;
+    --code-bg: #eaf0f3;
+    --display: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e161c;
+      --surface: #152028;
+      --ink: #e5edf2;
+      --ink-soft: #c2cfd7;
+      --muted: #8fa1ac;
+      --rule: #25333d;
+      --rule-strong: #34454f;
+      --accent: #4db2dc;
+      --accent-ink: #7cc8e8;
+      --accent-wash: #12303e;
+      --brand-red: #e27786;
+      --crit: #f08a99;
+      --crit-wash: #3a1a20;
+      --warn: #e9b35c;
+      --warn-wash: #352710;
+      --info: #aebdc6;
+      --info-wash: #1f2c35;
+      --ok: #7bcf9b;
+      --ok-wash: #173226;
+      --code-bg: #1b2831;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e161c;
+    --surface: #152028;
+    --ink: #e5edf2;
+    --ink-soft: #c2cfd7;
+    --muted: #8fa1ac;
+    --rule: #25333d;
+    --rule-strong: #34454f;
+    --accent: #4db2dc;
+    --accent-ink: #7cc8e8;
+    --accent-wash: #12303e;
+    --brand-red: #e27786;
+    --crit: #f08a99;
+    --crit-wash: #3a1a20;
+    --warn: #e9b35c;
+    --warn-wash: #352710;
+    --info: #aebdc6;
+    --info-wash: #1f2c35;
+    --ok: #7bcf9b;
+    --ok-wash: #173226;
+    --code-bg: #1b2831;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font: 400 17px/1.6 var(--body);
+    padding-inline: 20px;
+    padding-block: 0 80px;
+  }
+  a { color: var(--accent-ink); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  code, .mono { font-family: var(--mono); font-size: 0.84em; }
+  code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 3px; overflow-wrap: anywhere; }
+
+  .wrap { max-width: 1140px; margin: 0 auto; }
+
+  /* ---------- En-tête du document ---------- */
+  .masthead {
+    padding-block: 56px 36px;
+    border-bottom: 1px solid var(--rule);
+    display: grid;
+    gap: 18px;
+  }
+  .eyebrow {
+    font: 600 13px/1.2 var(--display);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+  }
+  .eyebrow span + span::before { content: "·"; margin-right: 18px; color: var(--rule-strong); }
+  h1 {
+    font: 700 clamp(44px, 7vw, 76px)/0.95 var(--display);
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1 .tld { color: var(--accent); }
+  .lead { font-size: 20px; line-height: 1.5; color: var(--ink-soft); max-width: 62ch; margin: 0; }
+
+  /* ---------- Bandeau « fiche technique » ---------- */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    border-block: 2px solid var(--ink);
+    margin-block: 32px 0;
+  }
+  .spec div { padding: 14px 14px 16px; border-left: 1px solid var(--rule); }
+  .spec div:first-child { border-left: 0; padding-left: 0; }
+  .spec dt {
+    font: 600 12px/1.2 var(--display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .spec dd {
+    margin: 6px 0 0;
+    font: 600 34px/1 var(--display);
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .spec dd small { font-size: 17px; font-weight: 500; color: var(--ink-soft); margin-left: 3px; }
+  .spec .note { display: block; margin-top: 6px; font: 400 13px/1.35 var(--body); color: var(--muted); white-space: normal; }
+  .spec dd.bad { color: var(--crit); }
+  @media (max-width: 980px) {
+    .spec { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .spec div:nth-child(4) { border-left: 0; padding-left: 0; }
+    .spec div:nth-child(n+4) { border-top: 1px solid var(--rule); }
+  }
+  @media (max-width: 560px) {
+    .spec { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .spec div { border-left: 0 !important; padding-left: 0 !important; border-top: 1px solid var(--rule); }
+    .spec div:nth-child(-n+2) { border-top: 0; }
+    .spec div:nth-child(even) { padding-left: 14px !important; border-left: 1px solid var(--rule) !important; }
+  }
+
+  /* ---------- Mise en page ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 56px;
+    padding-top: 40px;
+  }
+  .toc { position: sticky; top: 24px; align-self: start; }
+  .toc p {
+    font: 600 12px/1 var(--display);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; border-left: 1px solid var(--rule); }
+  .toc a {
+    display: block;
+    padding: 5px 0 5px 14px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+  .toc a:hover { color: var(--accent-ink); border-left-color: var(--accent); }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .toc { position: static; }
+    .toc ol { display: flex; flex-wrap: wrap; gap: 6px; border: 0; }
+    .toc a { border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px; margin: 0; font-size: 14px; }
+  }
+
+  main { min-width: 0; display: grid; gap: 64px; }
+  section { display: grid; gap: 18px; scroll-margin-top: 20px; }
+  section > p, section > ul, .prose { max-width: 68ch; margin: 0; }
+  h2 {
+    font: 700 34px/1.05 var(--display);
+    margin: 0;
+    padding-top: 14px;
+    border-top: 2px solid var(--ink);
+    text-wrap: balance;
+  }
+  h3 {
+    font: 600 21px/1.2 var(--display);
+    letter-spacing: 0.01em;
+    margin: 12px 0 0;
+    text-wrap: balance;
+  }
+  ul { padding-left: 1.1em; margin: 0; }
+  li + li { margin-top: 4px; }
+  .muted { color: var(--muted); }
+
+  /* ---------- Verdict ---------- */
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 24px 26px;
+    display: grid;
+    gap: 12px;
+    max-width: 78ch;
+  }
+  .verdict .label {
+    font: 600 12px/1 var(--display);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+  }
+  .verdict p { margin: 0; }
+  .verdict .big { font: 600 25px/1.25 var(--display); text-wrap: balance; }
+
+  /* ---------- Constats ---------- */
+  .findings { list-style: none; padding: 0; margin: 0; display: grid; border-top: 1px solid var(--rule); }
+  .findings li {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .findings strong { display: block; font-weight: 600; }
+  .findings .detail { color: var(--ink-soft); font-size: 16px; }
+  @media (max-width: 560px) {
+    .findings li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  }
+  .sev {
+    align-self: start;
+    justify-self: start;
+    font: 600 12px/1 var(--display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 8px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .sev.crit { color: var(--crit); background: var(--crit-wash); }
+  .sev.high { color: var(--warn); background: var(--warn-wash); }
+  .sev.low { color: var(--info); background: var(--info-wash); }
+  .sev.ok { color: var(--ok); background: var(--ok-wash); }
+
+  /* ---------- Tableaux ---------- */
+  .table { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 15.5px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th {
+    font: 600 12px/1.2 var(--display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--ground);
+    white-space: nowrap;
+  }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .sev { display: inline-block; }
+
+  /* ---------- Arborescence ---------- */
+  .tree { list-style: none; padding: 0; margin: 0; columns: 2 280px; column-gap: 40px; }
+  .tree > li { break-inside: avoid; margin: 0 0 12px; }
+  .tree > li > span { font: 600 17px/1.3 var(--display); letter-spacing: 0.02em; text-transform: uppercase; }
+  .tree ul { list-style: none; padding: 4px 0 0 14px; border-left: 1px solid var(--rule-strong); margin: 4px 0 0 2px; }
+  .tree ul li { margin: 0; font-size: 15px; }
+  .tree .url { display: block; font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+
+  pre {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font: 400 13.5px/1.6 var(--mono);
+    color: var(--ink-soft);
+  }
+  pre b { color: var(--ink); font-weight: 500; }
+
+  .twocol { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 40px; }
+  .twocol > div { display: grid; gap: 8px; align-content: start; }
+
+  .steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 14px; max-width: 72ch; }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; margin: 0; }
+  .steps li::before {
+    content: counter(s);
+    font: 700 22px/1.1 var(--display);
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  footer.colophon { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow"><span>Audit avant refonte</span><span>14 septembre 2026</span><span>Little · Technical Studio</span></div>
+    <h1>little-cars<span class="tld">.fr</span></h1>
+    <p class="lead">État des lieux du site actuel (technique, contenus, fonctionnalités, performance, SEO, RGPD) et inventaire de ce qui a été récupéré pour reconstruire le site from scratch sur le VPS IONOS, d'abord sur <code>little-cars.walautao.fr</code>.</p>
+
+    <dl class="spec">
+      <div><dt>Pages publiées</dt><dd>33</dd><span class="note">dont 3 à supprimer</span></div>
+      <div><dt>Médias</dt><dd>741<small>fichiers</small></dd><span class="note">121 Mo récupérés, 0 erreur</span></div>
+      <div><dt>Temps serveur</dt><dd class="bad">1,4<small>s</small></dd><span class="note">TTFB accueil, cible &lt; 0,6 s</span></div>
+      <div><dt>Affichage principal</dt><dd class="bad">6,9<small>s</small></dd><span class="note">LCP mesuré navigateur</span></div>
+      <div><dt>Poids accueil</dt><dd>2,6<small>Mo</small></dd><span class="note">83 requêtes, dont 1,7 Mo de CSS</span></div>
+      <div><dt>Images sans alt</dt><dd class="bad">92<small>%</small></dd><span class="note">666 sur 727</span></div>
+    </dl>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Sommaire">
+      <p>Sommaire</p>
+      <ol>
+        <li><a href="#synthese">Synthèse</a></li>
+        <li><a href="#hebergement">Hébergement &amp; domaine</a></li>
+        <li><a href="#stack">Stack technique</a></li>
+        <li><a href="#contenus">Contenus &amp; arborescence</a></li>
+        <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+        <li><a href="#performance">Performance</a></li>
+        <li><a href="#seo">SEO</a></li>
+        <li><a href="#rgpd">RGPD &amp; sécurité</a></li>
+        <li><a href="#aspirateur">Contenus récupérés</a></li>
+        <li><a href="#refonte">Refonte &amp; migration</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <!-- ============================================================ -->
+      <section id="synthese">
+        <h2>Synthèse</h2>
+        <div class="verdict">
+          <span class="label">Verdict</span>
+          <p class="big">La refonte from scratch est justifiée : le site est un WordPress Divi figé depuis 2023, lent, lourd et fragile à maintenir.</p>
+          <p>Le contenu, lui, est riche et réutilisable : 6 fiches véhicules détaillées, une offre de services claire (SAV, maintenance, LLD, Reborn, occasion), des photos terrain et 12 PDF techniques. Tout a été récupéré. La vraie complexité de la migration est ailleurs : le DNS et la messagerie Microsoft 365, le suivi publicitaire server-side et les formulaires.</p>
+        </div>
+
+        <h3>Priorités</h3>
+        <ul class="findings">
+          <li><span class="sev crit">Critique</span><div><strong>Traceurs chargés avant tout choix de consentement</strong><span class="detail">Au premier affichage, avant de cliquer sur le bandeau Cookiebot, le navigateur contacte Google Analytics, Google Ads (<code>googleadservices</code>, <code>pagead2</code>), Smartlook (enregistrement de sessions) et YouTube. Point à vérifier en priorité avec la configuration du Consent Mode : risque CNIL.</span></div></li>
+          <li><span class="sev crit">Critique</span><div><strong>Migration DNS à préparer au record près</strong><span class="detail">La zone est chez o2switch et héberge aussi la messagerie Outlook (MX, autodiscover, DKIM), le tracking Stape et Matomo. Un changement de serveurs DNS sans recopie complète couperait les e-mails.</span></div></li>
+          <li><span class="sev high">Important</span><div><strong>Performance médiocre</strong><span class="detail">1,4 s de réponse serveur avant le moindre octet, 2,6 Mo et 83 requêtes pour l'accueil, 5 familles Google Fonts, aucune image WebP/AVIF, zoom mobile bloqué.</span></div></li>
+          <li><span class="sev high">Important</span><div><strong>Thème Divi non mis à jour depuis novembre 2024</strong><span class="detail">Version 4.27.4 installée, 4.27.8 disponible. WordPress 7.1 est à jour, mais le thème et ses plugins premium (Search &amp; Filter Pro, Divi Modules Pro) semblent ne plus être suivis.</span></div></li>
+          <li><span class="sev high">Important</span><div><strong>Erreurs de contenu visibles</strong><span class="detail">Liens vers <code>little.local</code> (poste de dev de l'agence) sur 7 pages, liens du pied de page qui pointent vers la mauvaise page, H1 « Un SAV à votre service » sur les fiches occasion, grille tarifaire PDF de janvier 2023 toujours en ligne.</span></div></li>
+          <li><span class="sev low">Mineur</span><div><strong>Restes d'installation</strong><span class="detail">Article « Bonjour tout le monde ! », page « 404-2 » présente dans le sitemap, page de test Contact Form 7, archive auteur qui expose l'identifiant de connexion.</span></div></li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="hebergement">
+        <h2>Hébergement &amp; domaine</h2>
+        <div class="table">
+          <table>
+            <thead><tr><th>Élément</th><th>Constat</th><th>Pour la migration</th></tr></thead>
+            <tbody>
+              <tr><td>Domaine</td><td><code>little-cars.fr</code> chez <b>Gandi</b>, titulaire Technical Studio, expire le 31/12/2027</td><td>Vérifier qui détient l'accès au compte Gandi (toi ou l'agence)</td></tr>
+              <tr><td>Serveurs DNS</td><td><code>ns1/ns2.o2switch.net</code> : la zone est gérée dans le cPanel o2switch de l'agence</td><td>Récupérer l'export complet de la zone avant toute bascule</td></tr>
+              <tr><td>Hébergement</td><td>Mutualisé o2switch (PowerBoost), IP <code>109.234.165.14</code>, redirection www → racine, HTTP/2, Brotli</td><td>Remplacé par le VPS IONOS</td></tr>
+              <tr><td>Certificat</td><td>Let's Encrypt, valide jusqu'au 18/10/2026 (renouvellement auto)</td><td>Certbot / Caddy sur le VPS</td></tr>
+              <tr><td>Messagerie</td><td>Microsoft 365 : MX <code>littlecars-fr01e.mail.protection.outlook.com</code>, autodiscover, DKIM (tenant <code>technicalstudio45</code>)</td><td><b>Ne pas toucher</b> : à recopier tel quel</td></tr>
+              <tr><td>SPF / DMARC</td><td>SPF inclut o2switch, <code>jabatus.fr</code> et Outlook. DMARC en <code>p=none</code></td><td>Remplacer l'IP o2switch par celle du VPS si le site envoie des e-mails</td></tr>
+              <tr><td>Sous-domaines</td><td><code>data.</code> et <code>load.data.</code> → Stape (GTM server-side), <code>stats.</code> → Matomo sur o2switch, <code>mail.</code> → o2switch</td><td>Matomo disparaît avec o2switch : décider s'il est conservé</td></tr>
+              <tr><td>Vérifications</td><td>TXT Google Search Console, Microsoft, Brevo (ex-Sendinblue)</td><td>À recopier</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">Crédit en pied de page : Agence Paradoxe. <code>walautao.fr</code> est chez IONOS (DNS <code>ui-dns</code>, A <code>66.71.220.1</code>). <code>little-cars.walautao.fr</code> n'existe pas encore.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="stack">
+        <h2>Stack technique</h2>
+        <div class="table">
+          <table>
+            <thead><tr><th>Composant</th><th>Version</th><th>Rôle</th><th>État</th></tr></thead>
+            <tbody>
+              <tr><td>WordPress</td><td class="num">7.1</td><td>CMS</td><td><span class="sev ok">À jour</span></td></tr>
+              <tr><td>Divi (Elegant Themes)</td><td class="num">4.27.4</td><td>Thème + page builder, toutes les pages en « blank template »</td><td><span class="sev high">Retard</span> 4.27.8 dispo</td></tr>
+              <tr><td>Divi Child</td><td class="num">1.0.0</td><td>Thème enfant vide (aucune personnalisation)</td><td><span class="sev low">Inutile</span></td></tr>
+              <tr><td>Supreme Modules for Divi</td><td class="num">2.5.62</td><td>Modules Divi supplémentaires</td><td><span class="sev low">Dépendance</span></td></tr>
+              <tr><td>Divi Modules Pro</td><td class="num">1.2.1</td><td>Modules Divi premium</td><td><span class="sev low">Dépendance</span></td></tr>
+              <tr><td>Search &amp; Filter Pro + Divi</td><td class="num">2.5.13 / 1.0.8</td><td>Filtre des véhicules d'occasion</td><td><span class="sev high">Surdimensionné</span> pour 2 fiches</td></tr>
+              <tr><td>Contact Form 7</td><td class="num">6.1.3</td><td>Formulaires des landing pages Google Ads</td><td><span class="sev low">Doublon</span> avec le formulaire Divi</td></tr>
+              <tr><td>Yoast SEO</td><td class="num">—</td><td>Balises SEO, sitemap, robots.txt</td><td><span class="sev ok">OK</span></td></tr>
+              <tr><td>Redirection</td><td class="num">—</td><td>Gestion des 301</td><td><span class="sev low">Exporter</span> les règles</td></tr>
+              <tr><td>Visualizer</td><td class="num">—</td><td>Graphiques, ressources chargées sur chaque page</td><td><span class="sev low">Usage à confirmer</span></td></tr>
+              <tr><td>Solid Security (iThemes)</td><td class="num">—</td><td>Sécurité, masque <code>wp-login.php</code> et <code>xmlrpc.php</code> (503)</td><td><span class="sev ok">OK</span></td></tr>
+              <tr><td>Cookiebot (Usercentrics)</td><td class="num">—</td><td>Bandeau de consentement</td><td><span class="sev crit">À vérifier</span></td></tr>
+              <tr><td>reCAPTCHA v3</td><td class="num">—</td><td>Anti-spam formulaires, chargé sur toutes les pages</td><td><span class="sev low">Lourd</span></td></tr>
+              <tr><td>jQuery + Migrate</td><td class="num">3.7.1 / 3.4.1</td><td>Dépendance Divi</td><td><span class="sev low">Lourd</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="twocol">
+          <div>
+            <h3>Mesure &amp; marketing</h3>
+            <ul>
+              <li>Google Tag Manager <code>GTM-NMVSTKN</code> servi en first-party via <b>Stape</b> (<code>load.data.little-cars.fr</code>)</li>
+              <li>Google Analytics 4 et Google Ads (conversion)</li>
+              <li>Matomo auto-hébergé (<code>stats.little-cars.fr</code>)</li>
+              <li>Smartlook : enregistrement des sessions</li>
+              <li>4 landing pages Google Ads en <code>noindex</code></li>
+            </ul>
+          </div>
+          <div>
+            <h3>Identité visuelle actuelle</h3>
+            <ul>
+              <li>Bleu <code>#0378a6</code>, bordeaux <code>#7d1122</code>, blanc, noir (logo bleu-blanc-rouge)</li>
+              <li>Polices : Quicksand, Open Sans, Average Sans, Oswald, Cormorant Garamond, plus Montserrat, Abril Fatface et Libre Baskerville chargées sans être utilisées</li>
+              <li>Mise en page : photos plein écran, slider d'accueil, pictos blancs, header sticky</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="contenus">
+        <h2>Contenus &amp; arborescence</h2>
+        <p>30 pages, 1 article et 2 fiches du type de contenu « véhicules d'occasion ». La plupart des pages datent de février à avril 2023. Seuls l'accueil et le contact ont été retouchés (janvier 2026). Médiathèque : 458 fichiers ajoutés en 2022, 274 en 2023, 7 en 2024.</p>
+
+        <h3>Menu principal</h3>
+        <ul class="tree">
+          <li><span>Little</span><ul><li>L'ADN de Little<span class="url">/little/</span></li></ul></li>
+          <li><span>Les véhicules</span>
+            <ul>
+              <li>Par usage<span class="url">/les-utilitaires-electriques-par-usage/</span></li>
+              <li>Ebox 2 et 3 places<span class="url">/utilitaire-electrique-ebox-2-et-3-places/</span></li>
+              <li>Ebox 6 et 9 places<span class="url">/utilitaire-electrique-ebox-6-et-9-places/</span></li>
+              <li>Ebox XL 2 et 6 places<span class="url">/utilitaire-electrique-ebox-xl-2-et-6-places/</span></li>
+              <li>Ebox Industrie 2 et 3 places<span class="url">/utilitaire-electrique-ebox-industrie-2-et-3-places/</span></li>
+              <li>Ebox Rail et route<span class="url">/utilitaire-electrique-ebox-rail-et-route/</span></li>
+              <li>Bego<span class="url">/bego-lutilitaire-electrique-ultime/</span></li>
+              <li>Accessoires Ebox<span class="url">/accessoires-ebox/</span></li>
+            </ul>
+          </li>
+          <li><span>SAV &amp; Services</span>
+            <ul>
+              <li>Nos services<span class="url">/services-apres-vente-et-services-little/</span></li>
+              <li>Maintenance<span class="url">/contrats-dentretien-de-maintenance-little/</span></li>
+              <li>Pièces d'origine<span class="url">/pieces-dorigine-little/</span></li>
+              <li>Demande de SAV<span class="url">/faire-une-demande-de-sav/</span></li>
+              <li>Programme Reborn<span class="url">/programme-reborn/</span></li>
+            </ul>
+          </li>
+          <li><span>Location</span><ul><li>LLD Little<span class="url">/location-longue-duree-little/</span></li></ul></li>
+          <li><span>Occasion</span><ul><li>Liste filtrable + 2 fiches<span class="url">/nos-vehicules-doccasion/</span></li></ul></li>
+          <li><span>Ressources</span>
+            <ul>
+              <li>Documentation (fiches techniques)<span class="url">/fiches-techniques/</span></li>
+              <li>FAQ<span class="url">/faq/</span></li>
+            </ul>
+          </li>
+          <li><span>Contact</span><ul><li>Formulaire de contact<span class="url">/little-contact/</span></li></ul></li>
+          <li><span>Hors menu</span>
+            <ul>
+              <li>Les 5 atouts de la gamme Ebox<span class="url">/les-5-atouts-de-la-gamme-ebox/</span></li>
+              <li>Merci pour votre demande<span class="url">/merci-pour-votre-demande/</span></li>
+              <li>Mentions légales, politique de confidentialité</li>
+              <li>Landing Ads : SSV, UTV, mule, 4x4 électrique</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Médias</h3>
+        <div class="table">
+          <table>
+            <thead><tr><th>Type</th><th>Nombre</th><th>Remarque</th></tr></thead>
+            <tbody>
+              <tr><td>JPEG</td><td class="num">657</td><td>Photos produit et terrain, jusqu'à 1920 px et 860 Ko, aucune version WebP</td></tr>
+              <tr><td>PNG</td><td class="num">72</td><td>Logos, pictos blancs, drapeau Made in France</td></tr>
+              <tr><td>PDF</td><td class="num">12</td><td>9 fiches techniques, 3 brochures (Bego, Nature, Industrie), grille tarifaire <b>01/2023</b></td></tr>
+              <tr><td>Vidéos</td><td class="num">12</td><td>Intégrées : 6 YouTube, 6 Vimeo (témoignages clients, démonstrations)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="fonctionnalites">
+        <h2>Fonctionnalités</h2>
+        <div class="table">
+          <table>
+            <thead><tr><th>Fonction</th><th>Implémentation actuelle</th><th>Champs / détail</th></tr></thead>
+            <tbody>
+              <tr><td>Contact</td><td>Module contact Divi (2 formulaires sur la page)</td><td>Prénom, nom, téléphone, e-mail, secteur d'activité, degré d'urgence, sujet, message</td></tr>
+              <tr><td>Demande de SAV</td><td>Module contact Divi</td><td>Nom, prénom, entreprise, téléphone, e-mail, <b>modèle</b>, <b>n° de série</b>, sujet, message</td></tr>
+              <tr><td>Leads Google Ads</td><td>Contact Form 7 sur 4 landing pages</td><td>Nom, prénom, téléphone, e-mail, secteur, <b>date prévue d'acquisition</b>, message (tous obligatoires) → page « Merci »</td></tr>
+              <tr><td>Newsletter</td><td>Champ e-mail en pied de chaque page</td><td>Probablement relié à Brevo (vérification TXT présente)</td></tr>
+              <tr><td>Véhicules d'occasion</td><td>Type de contenu + Search &amp; Filter Pro</td><td>Filtres marque, année, énergie, kilométrage (min/max), prix (min/max). <b>2 fiches</b>, la plus ancienne de janvier 2023</td></tr>
+              <tr><td>Fiches véhicules</td><td>Pages Divi</td><td>Prix d'achat et LLD, caractéristiques (charge utile, traction, autonomie, rayon de braquage, dimensions, recharge), options, galerie, PDF</td></tr>
+              <tr><td>Documentation</td><td>Liens directs vers les PDF</td><td>Aucun formulaire de collecte</td></tr>
+              <tr><td>Vidéos</td><td>iframes YouTube (<code>youtube.com</code>, sans mode nocookie) et Vimeo</td><td>Témoignages clients (haras, Globe Planter…)</td></tr>
+              <tr><td>Divers</td><td>Slider d'accueil, header sticky, animations au scroll, menu mobile</td><td>Pas de recherche, pas de blog actif, pas d'espace client, site en français uniquement</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">Les formulaires Divi envoient un simple e-mail : il n'y a pas de CRM connecté visible côté site. À confirmer avec l'agence ou dans la boîte contact@.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="performance">
+        <h2>Performance</h2>
+        <p>Mesures réalisées le 14/09/2026 sur l'accueil, depuis un navigateur Chromium (quota PageSpeed Insights épuisé ce jour-là). Ce sont des ordres de grandeur, pas un score Lighthouse.</p>
+        <div class="table">
+          <table>
+            <thead><tr><th>Indicateur</th><th>Mesure</th><th>Cible</th><th>Cause principale</th></tr></thead>
+            <tbody>
+              <tr><td>Réponse serveur (TTFB)</td><td class="num">1,25 – 1,38 s</td><td class="num">&lt; 0,6 s</td><td>WordPress + Divi générés à chaque visite, pas de cache de page efficace</td></tr>
+              <tr><td>Affichage principal (LCP)</td><td class="num">≈ 6,9 s</td><td class="num">&lt; 2,5 s</td><td>Le H1 du slider apparaît avec une animation</td></tr>
+              <tr><td>Stabilité (CLS)</td><td class="num">0</td><td class="num">&lt; 0,1</td><td><span class="sev ok">OK</span></td></tr>
+              <tr><td>Requêtes</td><td class="num">83</td><td class="num">&lt; 40</td><td>37 scripts, 14 préchargements, 8 iframes, 14 domaines</td></tr>
+              <tr><td>Poids transféré</td><td class="num">2,6 Mo</td><td class="num">&lt; 1 Mo</td><td>1,7 Mo de CSS Divi, 570 Ko de JS</td></tr>
+              <tr><td>HTML</td><td class="num">199 Ko, 1 483 nœuds</td><td class="num">—</td><td>Sections dupliquées pour desktop et mobile</td></tr>
+              <tr><td>Images</td><td class="num">0 WebP</td><td class="num">WebP / AVIF</td><td>JPEG bruts, 16 images en lazy-load sur 23</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="seo">
+        <h2>SEO</h2>
+        <div class="twocol">
+          <div>
+            <h3>Acquis à conserver</h3>
+            <ul>
+              <li>Titles et meta descriptions rédigés sur les pages principales</li>
+              <li>Sitemap XML, canonical, Open Graph, <code>lang="fr-FR"</code></li>
+              <li>URLs parlantes, riches en mots-clés (« utilitaire électrique », « SSV électrique »)</li>
+              <li>Search Console vérifiée</li>
+              <li>0 lien interne cassé sur 42 vérifiés</li>
+            </ul>
+          </div>
+          <div>
+            <h3>À corriger dans la refonte</h3>
+            <ul>
+              <li><b>25 pages ont deux H1</b> (version desktop + version mobile Divi)</li>
+              <li>Fiches occasion : H1 « Un SAV à votre service » copié d'un modèle</li>
+              <li>666 images sans texte alternatif</li>
+              <li>Liens <code>https://little.local/…</code> sur 7 pages (FAQ, 5 atouts, fiches Ebox)</li>
+              <li>Pied de page : « Pièces d'origine » pointe vers Maintenance, « Ebox XL » vers Ebox Industrie</li>
+              <li>Meta description absente : mentions légales, confidentialité, fiches occasion, page Merci</li>
+              <li>« 404-2 », « Bonjour tout le monde », archive auteur et catégorie « Non classé » dans le sitemap</li>
+            </ul>
+          </div>
+        </div>
+        <p><b>Règle de migration :</b> garder exactement les mêmes URLs pour les pages du menu, ou prévoir une redirection 301 pour chaque URL modifiée, et exporter les règles du plugin Redirection avant de fermer le WordPress.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="rgpd">
+        <h2>RGPD &amp; sécurité</h2>
+        <ul class="findings">
+          <li><span class="sev crit">Critique</span><div><strong>Requêtes tierces avant consentement</strong><span class="detail">Observées au premier chargement, bandeau encore ouvert : <code>region1.google-analytics.com</code>, <code>googleadservices.com</code>, <code>pagead2.googlesyndication.com</code>, <code>web-sdk.smartlook.com</code>, <code>youtube.com</code> (8 iframes). Le Consent Mode v2 « avancé » peut expliquer une partie des requêtes Google, pas Smartlook ni YouTube.</span></div></li>
+          <li><span class="sev high">Important</span><div><strong>Aucun en-tête de sécurité HTTP</strong><span class="detail">Pas de HSTS, CSP, X-Frame-Options, X-Content-Type-Options ni Referrer-Policy.</span></div></li>
+          <li><span class="sev high">Important</span><div><strong>Identifiant administrateur exposé</strong><span class="detail"><code>/wp-json/wp/v2/users</code> et <code>/?author=1</code> révèlent le login du compte auteur.</span></div></li>
+          <li><span class="sev low">Mineur</span><div><strong>Mentions légales incomplètes</strong><span class="detail">Éditeur (Technical Studio), adresse à Boismorand et directeur de la publication indiqués, mais ni hébergeur ni SIREN. Texte de 2023 qui ne cite pas les traceurs actuels.</span></div></li>
+          <li><span class="sev low">Mineur</span><div><strong>DMARC en surveillance seule</strong><span class="detail"><code>p=none</code> : aucune protection contre l'usurpation du domaine par e-mail.</span></div></li>
+          <li><span class="sev ok">OK</span><div><strong>HTTPS et protection de connexion</strong><span class="detail">Redirection HTTP → HTTPS, certificat valide, page de connexion et XML-RPC bloqués par Solid Security.</span></div></li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="aspirateur">
+        <h2>Contenus récupérés</h2>
+        <p>Tout est dans <code>Projet Web/little-cars/scrape/</code>. Le script est relançable (<code>python3 tools/scrape.py --out scrape</code>, puis <code>python3 tools/clean_content.py scrape</code>) : les médias déjà présents ne sont pas retéléchargés.</p>
+<pre><b>scrape/</b>
+├── <b>pages/</b>&lt;slug&gt;/          33 dossiers, un par page
+│   ├── content.md          texte propre (titres, listes, liens, images), sans header/footer
+│   ├── content-brut.md     texte complet avant nettoyage
+│   ├── meta.json           title, description, H1–H4, images + alt, PDF, liens, formulaires, vidéos
+│   ├── seo-yoast.json      données SEO Yoast
+│   ├── page.html           HTML rendu d'origine
+│   └── api-content.html    contenu tel que renvoyé par l'API WordPress
+├── <b>media/uploads/</b>AAAA/MM/  741 fichiers originaux (121 Mo), arborescence WordPress conservée
+├── <b>layout/</b>                menu.json (arborescence), blocs-communs.md (header + footer)
+├── <b>theme/</b>                 CSS du site + design-tokens.json (couleurs, polices)
+├── <b>api/</b>                   exports JSON bruts : pages, médias, occasions, types, site
+├── <b>rapport/</b>               resume.json, liens-casses.json
+├── inventaire-pages.csv    1 ligne par page : title, description, H1, mots, images, formulaires
+└── inventaire-medias.csv   1 ligne par fichier : dimensions, poids, alt, pages qui l'utilisent</pre>
+        <p class="muted">Les CSV sont en UTF-8 avec point-virgule : ils s'ouvrent directement dans Excel. Non récupéré : les réglages internes WordPress (règles de redirection, destinataires des formulaires, configuration Cookiebot et GTM), qui demandent un accès administrateur.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="refonte">
+        <h2>Refonte &amp; migration</h2>
+        <div class="twocol">
+          <div>
+            <h3>À garder</h3>
+            <ul>
+              <li>Arborescence et URLs des 30 pages utiles (dont 4 landing pages Ads et 2 fiches occasion)</li>
+              <li>Textes produits, FAQ, services, preuves (Made in France, 20 ans, témoignages)</li>
+              <li>Photos terrain et fiches techniques PDF</li>
+              <li>Parcours de lead : contact, SAV (modèle + n° de série), landing pages Ads</li>
+            </ul>
+          </div>
+          <div>
+            <h3>À repenser</h3>
+            <ul>
+              <li>Occasions : simple liste éditable plutôt qu'un plugin de filtre pour 2 véhicules</li>
+              <li>Fiches véhicules sur un gabarit unique (caractéristiques, prix, LLD, galerie, PDF)</li>
+              <li>Comparateur de la gamme Ebox (places, bennes, fourgons, empattements)</li>
+              <li>Images WebP/AVIF, 1 à 2 polices, zéro dépendance jQuery</li>
+              <li>Consentement réellement bloquant, vidéos chargées au clic</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Déploiement sur little-cars.walautao.fr</h3>
+        <ol class="steps">
+          <li><div>Créer chez IONOS l'enregistrement <code>A little-cars.walautao.fr</code> vers l'IP du VPS, et ajouter <code>X-Robots-Tag: noindex</code> pour que la préproduction ne soit pas indexée.</div></li>
+          <li><div>Construire le nouveau site à partir de <code>scrape/</code> et publier sur le VPS (reverse proxy + HTTPS).</div></li>
+          <li><div>Recetter : formulaires, redirections 301, balises SEO, consentement, performance.</div></li>
+          <li><div>Avant la bascule de <code>little-cars.fr</code>, exporter la zone DNS o2switch et récupérer l'accès Gandi.</div></li>
+          <li><div>Bascule : changer uniquement les enregistrements <code>A</code> de <code>little-cars.fr</code> et <code>www</code>. MX, autodiscover, DKIM, SPF, TXT et Stape restent identiques. Garder o2switch actif 30 jours en secours.</div></li>
+        </ol>
+      </section>
+
+      <footer class="colophon">Audit réalisé le 14 septembre 2026 à partir des pages publiques, de l'API REST WordPress, des enregistrements DNS et de mesures navigateur. Aucun accès administrateur n'a été utilisé.</footer>
+    </main>
+  </div>
+</div>

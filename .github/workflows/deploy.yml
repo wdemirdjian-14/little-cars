@@ -1,0 +1,128 @@
+name: Publication
+
+# Un tag = une version compilée et mise en ligne.
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  publier:
+    name: Compiler et mettre en ligne
+    runs-on: ubuntu-24.04
+    env:
+      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('manuel-{0}', github.run_number) }}
+      # Préproduction par défaut. Pour la production, définir les variables
+      # de dépôt SITE_URL=https://little-cars.fr et SITE_INDEXABLE=true.
+      SITE_URL: ${{ vars.SITE_URL || 'https://little-cars.walautao.fr' }}
+      SITE_INDEXABLE: ${{ vars.SITE_INDEXABLE || 'false' }}
+      APP_DIR: ${{ secrets.VPS_PATH || '/home/warren/little-cars' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Vérifier le code
+        run: npm run lint
+
+      - name: Compiler
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ env.SITE_URL }}
+        run: npm run build
+
+      - name: Assembler la release
+        run: |
+          REL="release/$VERSION"
+          mkdir -p "$REL/.next"
+          cp -r .next/standalone/. "$REL/"
+          cp -r .next/static "$REL/.next/static"
+          cp -r public "$REL/public"
+          echo "$VERSION" > "$REL/VERSION"
+          du -sh "$REL"
+          tar -czf "little-cars-$VERSION.tar.gz" -C release "$VERSION"
+
+      - name: Préparer la clé SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          [ -n "$HOST" ] || { echo "::error::Secret VPS_HOST manquant"; exit 1; }
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -lf ~/.ssh/deploy_key >/dev/null || { echo "::error::VPS_SSH_KEY illisible (clé tronquée ?)"; exit 1; }
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          else
+            ssh-keyscan "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+
+      - name: Envoyer sur le VPS
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          USER: ${{ secrets.VPS_USER }}
+        run: |
+          SSH="ssh -o BatchMode=yes -i $HOME/.ssh/deploy_key"
+          $SSH "$USER@$HOST" "mkdir -p '$APP_DIR/releases' '$APP_DIR/shared/data' && df -h '$APP_DIR' | tail -1"
+          rsync -az --delete -e "$SSH" "release/$VERSION/" "$USER@$HOST:$APP_DIR/releases/$VERSION/"
+          rsync -az -e "$SSH" ecosystem.config.cjs "$USER@$HOST:$APP_DIR/ecosystem.config.cjs"
+
+      - name: Activer la version
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -o BatchMode=yes -i "$HOME/.ssh/deploy_key" "$USER@$HOST" "bash -s" <<EOF
+          set -euo pipefail
+          cd '$APP_DIR'
+          PREVIOUS=\$(readlink current || true)
+          ln -sfn "releases/$VERSION" current
+          if pm2 describe little-cars >/dev/null 2>&1; then
+            pm2 reload ecosystem.config.cjs --update-env
+          else
+            pm2 start ecosystem.config.cjs
+          fi
+          pm2 save >/dev/null
+          for i in \$(seq 1 20); do
+            if curl -fsS -o /dev/null http://127.0.0.1:3020/; then echo "Version $VERSION en ligne"; break; fi
+            sleep 1
+            if [ "\$i" = 20 ]; then
+              echo "La version $VERSION ne répond pas : retour à \$PREVIOUS"
+              pm2 logs little-cars --lines 40 --nostream || true
+              [ -n "\$PREVIOUS" ] && ln -sfn "\$PREVIOUS" current && pm2 reload ecosystem.config.cjs --update-env
+              exit 1
+            fi
+          done
+          # On garde les 3 dernières releases.
+          ls -1dt releases/*/ | tail -n +4 | xargs -r rm -rf
+          EOF
+
+      - name: Nettoyer la clé
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+      - name: Créer la release GitHub
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$VERSION" "little-cars-$VERSION.tar.gz" --title "Little Cars $VERSION" --generate-notes
+
+      - name: Vérifier le site public
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --retry 5 --retry-delay 5 "$SITE_URL/" || true)
+          echo "$SITE_URL/ -> HTTP ${code:-aucune réponse}"
+          [ "$code" = "200" ] || { echo "::warning::Le site public ne répond pas 200 : vérifier nginx et le certificat (deploy/setup-nginx.sh)."; }
