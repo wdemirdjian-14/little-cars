@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Video } from "@/content/pages";
 import { Icon } from "./Icons";
 import { Photo } from "./Photo";
+import { track } from "./Tracker";
 
 /**
  * Vidéo chargée au clic seulement : aucune requête ni cookie YouTube/Vimeo
@@ -24,7 +25,10 @@ export function VideoLite({ video, caption = true }: { video: Video; caption?: b
         ) : (
           <>
             <Photo src={video.poster.src} alt={video.poster.alt} sizes="(max-width: 760px) 100vw, 50vw" />
-            <button className="video__play" type="button" onClick={() => setPlaying(true)}>
+            <button className="video__play" type="button" onClick={() => {
+                setPlaying(true);
+                track("video", video.title);
+              }}>
               <i>
                 <Icon name="play" />
               </i>

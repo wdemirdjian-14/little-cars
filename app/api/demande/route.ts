@@ -1,31 +1,17 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import nodemailer from "nodemailer";
 import { forms, type FormId } from "@/content/forms";
+import { recordEvent } from "@/lib/analytics";
+import { clientIp, isRateLimited, json } from "@/lib/http";
+import { mailConfigured, notificationAddress, sendMail } from "@/lib/mailer";
+import { SOURCE_LABEL, createMessage } from "@/lib/messages";
+import { SITE_URL } from "@/lib/seo";
 
 /**
- * Réception des formulaires. Chaque demande valide est ajoutée à
- * DATA_DIR/demandes.jsonl (le futur back-office les reprendra) puis envoyée
- * par e-mail si SMTP_HOST est configuré.
+ * Réception des formulaires (contact, SAV, devis, widget). Chaque demande
+ * valide arrive dans la boîte de réception du back-office, puis une
+ * notification est envoyée par e-mail si le SMTP est configuré.
  */
 
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_PER_WINDOW = 5;
-const recent = new Map<string, number[]>();
-
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-function json(status: number, body: object) {
-  return Response.json(body, { status });
-}
-
-function tooMany(ip: string) {
-  const now = Date.now();
-  const hits = (recent.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  hits.push(now);
-  recent.set(ip, hits);
-  return hits.length > MAX_PER_WINDOW;
-}
 
 export async function POST(req: Request) {
   let body: Record<string, unknown>;
@@ -35,15 +21,16 @@ export async function POST(req: Request) {
     return json(400, { error: "La demande n'a pas pu être lue." });
   }
 
-  const id = String(body.formulaire ?? "") as FormId;
-  const def = forms[id];
+  const formId = String(body.formulaire ?? "") as FormId;
+  const def = forms[formId];
   if (!def) return json(400, { error: "Formulaire inconnu." });
 
-  // Robots : on répond comme si tout allait bien, sans rien enregistrer.
+  // Robots : réponse positive, rien d'enregistré.
   if (String(body.site_web ?? "").trim() || Number(body.duree_ms) < 2500) return json(200, { ok: true });
 
-  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "inconnue";
-  if (tooMany(ip)) return json(429, { error: "Trop de demandes envoyées en peu de temps. Patientez quelques minutes." });
+  if (isRateLimited(`demande:${clientIp(req)}`, 5, 10 * 60_000)) {
+    return json(429, { error: "Trop de demandes envoyées en peu de temps. Patientez quelques minutes." });
+  }
 
   const values: Record<string, string> = {};
   const missing: string[] = [];
@@ -58,36 +45,44 @@ export async function POST(req: Request) {
   }
   if (missing.length) return json(400, { error: `Merci de renseigner : ${missing.join(", ")}.` });
 
-  const record = { date: new Date().toISOString(), formulaire: id, page: String(body.page ?? "").slice(0, 200), ...values };
+  const page = String(body.page ?? "").slice(0, 200);
+  const nom = [values.prenom, values.nom].filter(Boolean).join(" ");
 
-  const dir = process.env.DATA_DIR || path.join(process.cwd(), "data");
+  let id: number;
   try {
-    await fs.mkdir(dir, { recursive: true });
-    await fs.appendFile(path.join(dir, "demandes.jsonl"), JSON.stringify(record) + "\n", "utf8");
+    id = createMessage({
+      source: formId,
+      nom,
+      email: values.email ?? "",
+      telephone: values.telephone ?? "",
+      sujet: values.sujet || values.modele || def.title,
+      corps: values.message ?? "",
+      champs: values,
+      page,
+    });
   } catch (err) {
     console.error("[demande] enregistrement impossible", err);
     return json(500, { error: "La demande n'a pas pu être enregistrée." });
   }
 
-  if (process.env.SMTP_HOST) {
+  try {
+    recordEvent(req, "demande", formId, page);
+  } catch (err) {
+    console.error("[demande] mesure impossible", err);
+  }
+
+  if (mailConfigured()) {
     try {
-      const transport = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: Number(process.env.SMTP_PORT) === 465,
-        auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
-      });
       const lines = def.fields.map((f) => `${f.label} : ${values[f.name] || "—"}`);
-      await transport.sendMail({
-        from: process.env.MAIL_FROM || "Site Little <no-reply@little-cars.fr>",
-        to: process.env.MAIL_TO || "contact@little-cars.fr",
+      await sendMail({
+        to: notificationAddress(),
         replyTo: values.email,
-        subject: `[Site] ${def.title} — ${values.prenom} ${values.nom}`,
-        text: [`Nouvelle demande « ${id} » depuis ${record.page || "le site"}`, "", ...lines, "", `Reçue le ${record.date}`].join("\n"),
+        subject: `[Site] ${SOURCE_LABEL[formId] ?? def.title} — ${nom}`,
+        text: [`Nouvelle demande depuis ${page || "le site"}`, "", ...lines, "", `Traiter la demande : ${SITE_URL}/admin/messages/${id}/`].join("\n"),
       });
     } catch (err) {
-      // La demande est déjà enregistrée : on ne fait pas échouer le visiteur.
-      console.error("[demande] envoi e-mail impossible", err);
+      // La demande est déjà dans le back-office : on ne fait pas échouer le visiteur.
+      console.error("[demande] notification e-mail impossible", err);
     }
   }
 

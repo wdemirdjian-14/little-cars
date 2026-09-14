@@ -1,11 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Big_Shoulders, Chakra_Petch, Instrument_Sans } from "next/font/google";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { MotionRoot } from "@/components/MotionRoot";
-import { JsonLd } from "@/components/ui";
 import { home } from "@/content/pages";
-import { INDEXABLE, SITE_URL, organizationLd } from "@/lib/seo";
+import { INDEXABLE, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 // Polices auto-hébergées au build : aucune requête vers Google côté visiteur.
@@ -34,19 +30,11 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+/** Racine commune au site public (groupe (site)) et au back-office (admin). */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={`${display.variable} ${body.variable} ${hud.variable}`}>
-      <body>
-        <a href="#contenu" className="skip-link">
-          Aller au contenu
-        </a>
-        <Header />
-        <main id="contenu">{children}</main>
-        <Footer />
-        <MotionRoot />
-        <JsonLd data={organizationLd()} />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

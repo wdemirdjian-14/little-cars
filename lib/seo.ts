@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { brand } from "@/content/brand";
-import { company } from "@/content/site";
+import { company as defaultCompany, type Company } from "@/content/site";
 import type { Vehicle } from "@/content/types";
 import { mediaUrl } from "@/lib/media";
 
@@ -25,7 +25,7 @@ export function pageMetadata({ title, description, path, image, noindex }: PageM
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title, description, url: path, siteName: company.siteName, locale: "fr_FR", type: "website", images },
+    openGraph: { title, description, url: path, siteName: defaultCompany.siteName, locale: "fr_FR", type: "website", images },
     twitter: { card: "summary_large_image", title, description, images: images?.map((i) => i.url) },
     robots: !INDEXABLE ? { index: false, follow: false } : noindex ? { index: false, follow: true } : undefined,
   };
@@ -35,7 +35,7 @@ export function pageMetadata({ title, description, path, image, noindex }: PageM
 
 const ORG_ID = `${SITE_URL}/#organisation`;
 
-export function organizationLd() {
+export function organizationLd(company: Company = defaultCompany) {
   return {
     "@context": "https://schema.org",
     "@type": "AutomotiveBusiness",
@@ -93,7 +93,7 @@ export function vehicleLd(v: Vehicle) {
     "@type": "Product",
     name: `Little ${v.name}`,
     description: v.seo.description,
-    brand: { "@type": "Brand", name: company.brand },
+    brand: { "@type": "Brand", name: defaultCompany.brand },
     manufacturer: { "@id": ORG_ID },
     category: "Utilitaire électrique",
     url: absolute(`/${v.slug}/`),

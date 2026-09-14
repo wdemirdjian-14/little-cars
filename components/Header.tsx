@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { brand } from "@/content/brand";
-import { company, nav } from "@/content/site";
+import { nav } from "@/content/site";
 import { Icon } from "./Icons";
 import { Photo } from "./Photo";
 
-export function Header() {
+export function Header({ phone, phoneIntl }: { phone: string; phoneIntl: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const header = useRef<HTMLElement>(null);
@@ -136,8 +136,8 @@ export function Header() {
             </Link>
           </li>
         </ul>
-        <a className="btn" href={`tel:${company.phoneIntl}`} tabIndex={open ? 0 : -1}>
-          <Icon name="phone" /> {company.phone}
+        <a className="btn" href={`tel:${phoneIntl}`} tabIndex={open ? 0 : -1}>
+          <Icon name="phone" /> {phone}
         </a>
       </div>
     </>

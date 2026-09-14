@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
-import { occasions } from "@/content/pages";
 import { vehicles } from "@/content/vehicles";
+import { getContent } from "@/lib/content";
 import { absolute } from "@/lib/seo";
 
-/** Pages indexables uniquement : ni remerciement ni landing pages Ads. */
-export default function sitemap(): MetadataRoute.Sitemap {
+/** Pages indexables uniquement : ni remerciement, ni landing pages Ads, ni back-office. */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const occasions = await getContent("occasions");
   const lastModified = new Date();
   const pages: [string, number][] = [
     ["/", 1],

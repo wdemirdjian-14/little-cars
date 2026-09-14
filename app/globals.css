@@ -2473,6 +2473,121 @@ a.card:hover .card__media img {
   color: var(--volt);
 }
 
+/* Widget de contact ---------------------------------------------------------------- */
+
+.cw-launch {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 58;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 18px 0 16px;
+  border: 1px solid rgba(60, 200, 255, 0.45);
+  background: rgba(6, 16, 13, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: #ffffff;
+  font: 600 12px/1 var(--f-hud);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  transition: border-color 0.3s, background 0.3s;
+}
+.cw-launch:hover {
+  border-color: var(--volt);
+  background: rgba(10, 23, 19, 0.96);
+}
+.cw-launch svg {
+  width: 18px;
+  height: 18px;
+  color: var(--volt);
+}
+.cw-launch__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #54d38a;
+  animation: cw-pulse 2.4s ease-out infinite;
+}
+.lenis-stopped .cw-launch {
+  display: none;
+}
+.cw-panel {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 64px);
+  z-index: 58;
+  width: min(400px, calc(100vw - 32px));
+  max-height: calc(100svh - 120px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  background: var(--night-2);
+  border: 1px solid var(--night-line);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  animation: cw-in 0.45s var(--ease-out) both;
+}
+.cw-panel .form {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+.cw-panel .field textarea {
+  min-height: 110px;
+}
+.cw-panel .form__foot {
+  margin-top: 4px;
+}
+.cw-intro {
+  color: var(--mist-2);
+  font-size: 15px;
+}
+.cw-sent {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+}
+.cw-sent svg {
+  width: 34px;
+  height: 34px;
+  color: #54d38a;
+}
+@media (max-width: 560px) {
+  .cw-launch {
+    padding: 0 16px;
+  }
+  .cw-launch__label {
+    display: none;
+  }
+  .cw-panel {
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+}
+@keyframes cw-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@keyframes cw-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(84, 211, 138, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(84, 211, 138, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(84, 211, 138, 0);
+  }
+}
+
 /* Animations déclenchées par le scroll ------------------------------------------------------ */
 /* La classe .motion n'est posée qu'après hydratation, par MotionRoot : sans JavaScript,
    ou avec « réduire les animations », tout le contenu reste visible. */

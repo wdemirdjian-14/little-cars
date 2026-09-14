@@ -32,6 +32,8 @@ export const company = {
   },
 };
 
+export type Company = typeof company;
+
 export type NavItem = { label: string; href: string; children?: NavItem[] };
 
 export const nav: NavItem[] = [

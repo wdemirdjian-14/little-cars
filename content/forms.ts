@@ -14,7 +14,7 @@ export type Field = {
   half?: boolean;
 };
 
-export type FormId = "contact" | "sav" | "devis";
+export type FormId = "contact" | "sav" | "devis" | "widget";
 
 export type FormDef = {
   id: FormId;
@@ -84,6 +84,18 @@ export const forms: Record<FormId, FormDef> = {
       { name: "secteur", label: "Secteur d'activité", type: "select", options: SECTEURS, required: true, half: true },
       { name: "echeance", label: "Date prévue d'acquisition", type: "select", options: ECHEANCES, required: true, half: true },
       { name: "message", label: "Votre projet", type: "textarea", required: true },
+    ],
+  },
+  widget: {
+    id: "widget",
+    title: "Une question ?",
+    intro: "Écrivez-nous : un conseiller Little vous répond sous 48 h ouvrées.",
+    submitLabel: "Envoyer",
+    fields: [
+      { name: "nom", label: "Nom", type: "text", required: true, autoComplete: "name" },
+      { name: "email", label: "E-mail", type: "email", required: true, autoComplete: "email" },
+      { name: "telephone", label: "Téléphone (facultatif)", type: "tel", autoComplete: "tel" },
+      { name: "message", label: "Message", type: "textarea", required: true },
     ],
   },
 };

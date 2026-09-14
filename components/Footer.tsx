@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { brand } from "@/content/brand";
-import { company, footerColumns, legalLinks } from "@/content/site";
+import { footerColumns, legalLinks, type Company } from "@/content/site";
 import { Icon } from "./Icons";
 import { Photo } from "./Photo";
 
-export function Footer() {
+export function Footer({ company }: { company: Company }) {
   return (
     <footer className="site-footer">
       <div className="tricolor" />

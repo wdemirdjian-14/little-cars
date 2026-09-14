@@ -3,11 +3,16 @@ import { LeadForm } from "./LeadForm";
 import { Photo } from "./Photo";
 import { VideoLite } from "./VideoLite";
 import { ButtonLink, Checklist, SplitWords } from "./ui";
-import { home, landingContent, testimonials } from "@/content/pages";
-import { company, keyFigures } from "@/content/site";
+import { getContent } from "@/lib/content";
 
 /** Landing page de campagne Google Ads : hors index, tout converge vers le formulaire. */
-export function LandingPage({ slug, h1 }: { slug: string; h1: string }) {
+export async function LandingPage({ slug, h1 }: { slug: string; h1: string }) {
+  const [home, landingContent, testimonials, { company, keyFigures }] = await Promise.all([
+    getContent("accueil"),
+    getContent("landing-contenu"),
+    getContent("temoignages"),
+    getContent("site"),
+  ]);
   return (
     <>
       <section className="page-hero">

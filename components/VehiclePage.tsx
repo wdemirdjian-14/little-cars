@@ -7,10 +7,8 @@ import { Photo } from "./Photo";
 import { VehicleCard } from "./VehicleCard";
 import { VideoLite } from "./VideoLite";
 import { ButtonLink, JsonLd, SplitWords, euro } from "./ui";
-import { vehicleVideos } from "@/content/pages";
-import { company } from "@/content/site";
+import { getContent, getVehicles } from "@/lib/content";
 import type { Spec, Vehicle } from "@/content/types";
-import { vehicles } from "@/content/vehicles";
 import { breadcrumbLd, vehicleLd } from "@/lib/seo";
 
 /** Échelle de chaque jauge du tableau de bord (valeur pleine). */
@@ -33,7 +31,8 @@ function level(s: Spec) {
   return Math.min(1, Math.max(0.08, v / (SCALE[s.label] ?? (v * 1.25 || 1))));
 }
 
-export function VehiclePage({ v }: { v: Vehicle }) {
+export async function VehiclePage({ v }: { v: Vehicle }) {
+  const [vehicleVideos, { company }, vehicles] = await Promise.all([getContent("videos-vehicules"), getContent("site"), getVehicles()]);
   const video = vehicleVideos[v.slug];
   const others = vehicles.filter((o) => o.slug !== v.slug);
   const sheet = v.docs.find((d) => d.kind === "Fiche technique") ?? v.docs.find((d) => d.kind === "Brochure");

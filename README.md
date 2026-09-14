@@ -62,6 +62,34 @@ npm run media        # génère les WebP, le manifeste et les redirections
 - Titres visibles jamais masqués par une animation (LCP), images principales préchargées.
 - Préproduction : `noindex` (balise + en-tête `X-Robots-Tag`) et `robots.txt` bloquant, pilotés par `SITE_INDEXABLE`.
 
+## Back-office (`/admin/`)
+
+| Écran | Rôle |
+| --- | --- |
+| Tableau de bord | Audience sans cookie : visiteurs, pages vues, demandes, conversion, sources, appareils, actions (appels, e-mails, PDF, vidéos) |
+| Messages | Boîte de réception du widget et des formulaires : statut, note interne, réponse par e-mail |
+| Contenus | Textes, photos et SEO de chaque page, avec historique (30 versions) et retour au contenu d'origine |
+| Médias | Photos du site d'origine et téléversements (réduits dans le navigateur, convertis en WebP) |
+| Équipe | Invitations, liens de réinitialisation, désactivation (administrateurs uniquement) |
+
+Tout est stocké dans `DATA_DIR` (SQLite `little-cars.db` + `uploads/`), hors des releases. Sur le serveur : `~/little-cars/shared/data`, **à sauvegarder**.
+
+Le contenu par défaut reste dans `content/*.ts` : un document n'est écrit en base qu'après modification. L'éditeur déduit la forme de chaque document de sa valeur par défaut (`lib/content-schema.ts`) et refuse tout ce qui la casserait.
+
+### Premier compte
+
+Pas d'inscription libre : un lien d'invitation, valable 72 h, se crée en ligne de commande.
+
+```bash
+# en local
+npm run admin:invite -- prenom.nom@exemple.fr "Prénom Nom"
+
+# sur le serveur
+cd ~/little-cars/current && DATA_DIR=~/little-cars/shared/data NEXT_PUBLIC_SITE_URL=https://little-cars.walautao.fr ~/.local/node22/bin/node scripts/admin-invite.mjs prenom.nom@exemple.fr "Prénom Nom"
+```
+
+Les invitations suivantes se font depuis l'écran Équipe.
+
 ## Versions et déploiement
 
 Chaque **tag** `vX.Y.Z` déclenche `.github/workflows/deploy.yml` :

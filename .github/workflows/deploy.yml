@@ -50,6 +50,11 @@ jobs:
           cp -r .next/standalone/. "$REL/"
           cp -r .next/static "$REL/.next/static"
           cp -r public "$REL/public"
+          # Script d'invitation au back-office, lancé à la main sur le serveur.
+          mkdir -p "$REL/scripts" "$REL/lib"
+          cp scripts/admin-invite.mjs "$REL/scripts/"
+          cp lib/schema.mjs "$REL/lib/"
+          test -f "$REL/node_modules/better-sqlite3/build/Release/better_sqlite3.node" || { echo "::error::better-sqlite3 absent du build autonome"; exit 1; }
           echo "$VERSION" > "$REL/VERSION"
           du -sh "$REL"
           tar -czf "little-cars-$VERSION.tar.gz" -C release "$VERSION"

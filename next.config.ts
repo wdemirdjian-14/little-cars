@@ -36,6 +36,15 @@ function mediaRedirects() {
 const nextConfig: NextConfig = {
   // Autonome : le build GitHub Actions embarque son propre serveur Node.
   output: "standalone",
+  // Modules natifs : chargés tels quels par Node, jamais empaquetés.
+  serverExternalPackages: ["better-sqlite3", "sharp"],
+  // Les chemins construits depuis process.cwd() (base, images téléversées)
+  // font tracer tout le projet : on écarte ce qui n'a rien à faire sur le
+  // serveur (aspiration de 155 Mo, outils, données locales). public/ est
+  // copié à part par le workflow de publication.
+  outputFileTracingExcludes: {
+    "*": ["scrape/**", "tools/**", "audit/**", "data/**", "public/**", "deploy/**", "scripts/**", ".github/**", "*.md", "tsconfig.tsbuildinfo"],
+  },
   // Les URLs WordPress se terminent toutes par « / » : on les garde à l'identique.
   trailingSlash: true,
   poweredByHeader: false,
@@ -58,6 +67,13 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: common },
       { source: "/media/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      {
+        source: "/admin/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cache-Control", value: "no-store" },
+        ],
+      },
     ];
   },
 };
