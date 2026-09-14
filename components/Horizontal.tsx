@@ -61,15 +61,21 @@ export function Horizontal({
     return () => mm.revert();
   }, []);
 
+  // L'épinglage GSAP enveloppe la section dans un « pin-spacer ». Sans ce
+  // conteneur possédé par React, la section ne serait plus l'enfant direct de
+  // son parent React et la navigation vers une autre page planterait
+  // (removeChild : « The node to be removed is not a child of this node »).
   return (
-    <section ref={section} className={className}>
-      {head}
-      <div className="range__viewport">
-        <div ref={track} className={trackClassName}>
-          {children}
+    <div>
+      <section ref={section} className={className}>
+        {head}
+        <div className="range__viewport">
+          <div ref={track} className={trackClassName}>
+            {children}
+          </div>
         </div>
-      </div>
-      {progress && <div className="range__progress" aria-hidden="true" />}
-    </section>
+        {progress && <div className="range__progress" aria-hidden="true" />}
+      </section>
+    </div>
   );
 }
