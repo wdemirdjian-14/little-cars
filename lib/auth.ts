@@ -18,7 +18,7 @@ import { getDb } from "./db";
 export const SESSION_COOKIE = "lc_session";
 const SESSION_DAYS = 14;
 const INVITATION_HOURS = 72;
-export const PASSWORD_MIN = 12;
+export const PASSWORD_MIN = 10;
 
 export type Role = "admin" | "editeur";
 
