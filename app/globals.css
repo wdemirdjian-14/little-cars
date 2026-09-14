@@ -2484,6 +2484,12 @@ a.card:hover .card__media img {
 
 /* Widget de contact ---------------------------------------------------------------- */
 
+/* Le bouton du widget, fixé en bas à droite, ne doit jamais masquer les liens
+   du pied de page quand on arrive en bas de la page. */
+.footer-bottom {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
 .cw-launch {
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
