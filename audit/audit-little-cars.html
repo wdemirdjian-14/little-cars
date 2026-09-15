@@ -309,6 +309,104 @@
   }
 
   footer.colophon { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; }
+
+  /* ---------- Impression / PDF ---------- */
+  @page { size: A4; margin: 14mm 12mm 15mm; }
+
+  @media print {
+    /* Toujours sur fond blanc, quel que soit le thème de l'écran, et avec des
+       teintes assez sombres pour rester lisibles à l'impression papier. */
+    :root, :root[data-theme="dark"], :root:not([data-theme="light"]) {
+      --ground: #ffffff;
+      --surface: #ffffff;
+      --ink: #101c25;
+      --ink-soft: #37464f;
+      --muted: #5c6c77;
+      --rule: #ccd7de;
+      --rule-strong: #a7b6c0;
+      --accent: #04607f;
+      --accent-ink: #024a63;
+      --accent-wash: #e6f1f6;
+      --brand-red: #7d1122;
+      --crit: #8f1226;
+      --crit-wash: #fae7ea;
+      --warn: #7c4900;
+      --warn-wash: #fcf0da;
+      --info: #3a4f5c;
+      --info-wash: #e9eef1;
+      --ok: #1e5b37;
+      --ok-wash: #e3f2e9;
+      --code-bg: #eef2f5;
+    }
+    html { background: #fff; }
+    body {
+      background: #fff;
+      font-size: 10.5pt;
+      line-height: 1.5;
+      padding: 0;
+      /* Les pastilles de gravité perdraient tout leur sens sans leur fond. */
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .wrap { max-width: none; }
+    a { color: var(--ink); text-decoration: none; }
+
+    /* Page de garde : en-tête, chiffres clés, sommaire. */
+    .masthead { padding-block: 0 18px; }
+    h1 { font-size: 34pt; }
+    .lead { font-size: 11.5pt; max-width: none; }
+    .spec { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 20px; }
+    .spec div:nth-child(4) { border-left: 0; padding-left: 0; }
+    .spec div:nth-child(n+4) { border-top: 1px solid var(--rule); }
+    .spec dd { font-size: 20pt; }
+    .spec dd small { font-size: 11pt; }
+    .spec .note { font-size: 8pt; }
+
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 22px; }
+    /* La page A4 fait moins de 900 px de large : la variante « pastilles »
+       du petit écran s'applique aussi à l'impression, on la neutralise. */
+    .toc { position: static; break-after: page; }
+    .toc ol { display: block; list-style: decimal; margin: 0; padding-left: 1.5em; columns: 2; column-gap: 32px; border: 0; }
+    .toc li { break-inside: avoid; margin: 0; }
+    .toc a { display: block; border: 0; border-radius: 0; margin: 0; padding: 3px 0; font-size: 10.5pt; }
+
+    main { gap: 30px; }
+    section { gap: 12px; }
+    section > p, section > ul, .prose { max-width: none; }
+    h2 { font-size: 18pt; padding-top: 10px; }
+    h3 { font-size: 12pt; margin-top: 8px; }
+
+    /* Rien ne doit se couper au mauvais endroit : un titre reste avec son
+       texte, une ligne de tableau ou un constat ne s'étale pas sur deux pages. */
+    h2, h3 { break-after: avoid; break-inside: avoid; }
+    .verdict, .findings li, .steps li, .tree > li, .twocol > div, pre { break-inside: avoid; }
+    tr, .spec { break-inside: avoid; }
+    thead { display: table-header-group; }
+
+    .verdict { max-width: none; padding: 16px 18px; border-radius: 0; }
+    .verdict .big { font-size: 14pt; }
+    .findings li { padding: 9px 0; gap: 14px; }
+    .findings .detail { font-size: 9.5pt; }
+    .sev { font-size: 8pt; padding: 4px 6px 3px; }
+
+    /* Pas de défilement horizontal sur papier : tout doit tenir dans la page.
+       Un tableau reste d'un seul tenant : coupé en deux, Chrome superpose ses
+       dernières lignes au texte qui suit. */
+    .table { overflow: visible; border-radius: 0; break-inside: avoid; }
+    table { font-size: 9pt; }
+    th, td { padding: 6px 9px; }
+    pre { white-space: pre-wrap; overflow: visible; border-radius: 0; font-size: 8pt; padding: 12px 14px; }
+    /* Chrome donne à un bloc multi-colonnes une largeur minimale démesurée en
+       pagination, ce qui réduisait tout le document à 66 % : on repasse en
+       grille, qui se fragmente proprement d'une page à l'autre. */
+    .tree { columns: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; align-items: start; }
+    .tree > li > span { font-size: 11pt; }
+    .tree ul li { font-size: 9.5pt; }
+    .tree .url { font-size: 7.5pt; }
+    .steps li::before { font-size: 14pt; }
+
+    footer.colophon { margin-top: 28px; font-size: 9pt; break-inside: avoid; }
+  }
 </style>
 
 <div class="wrap">
